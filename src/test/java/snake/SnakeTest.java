@@ -27,47 +27,39 @@ public class SnakeTest {
 
 	@Test
 	public void testSnakeShouldStartAtOrigin() {
-		assertEquals(0, snake.getHead().x);
-		assertEquals(0, snake.getHead().y);
+		assertEquals(0, snake.getHeadLocation().x);
+		assertEquals(0, snake.getHeadLocation().y);
 	}
 
 	@Test
-	public void testSnakeShouldInitiallyHaveUpwardsVelocity() {
-		assertEquals(Snake.VELOCITY, snake.getVelocity().y);
-		assertEquals(0, snake.getVelocity().x);
+	public void testSnakeShouldInitiallyFaceUpwards() {
+		assertEquals(Direction.UP, snake.getDirection());
 	}
 
 	@Test
 	public void testSnakeShouldMove() {
 		snake.move(); // Move Upwards
-		assertEquals(0, snake.getHead().x);
-		assertEquals(1, snake.getHead().y);
+		assertEquals(0, snake.getHeadLocation().x);
+		assertEquals(1, snake.getHeadLocation().y);
 
 		snake.move(); // Move Upwards
-		assertEquals(0, snake.getHead().x);
-		assertEquals(2, snake.getHead().y);
+		assertEquals(0, snake.getHeadLocation().x);
+		assertEquals(2, snake.getHeadLocation().y);
 	}
 
 	@Test
-	public void testSnakeShouldTurnClockwise() {
-		snake.turnClockwise();
-		assertEquals(Snake.VELOCITY, snake.getVelocity().x);
-		assertEquals(0, snake.getVelocity().y);
+	public void testSnakeShouldTurnTurn() {
+		snake.turn(Direction.RIGHT);
+		assertEquals(Direction.RIGHT, snake.getDirection());
 
-		snake.turnClockwise();
-		assertEquals(0, snake.getVelocity().x);
-		assertEquals(-Snake.VELOCITY, snake.getVelocity().y);
-	}
+		snake.turn(Direction.DOWN);
+		assertEquals(Direction.DOWN, snake.getDirection());
 
-	@Test
-	public void testSnakeShouldTurnAntiClockwise() {
-		snake.turnAntiClockwise();
-		assertEquals(-Snake.VELOCITY, snake.getVelocity().x);
-		assertEquals(0, snake.getVelocity().y);
+		snake.turn(Direction.LEFT);
+		assertEquals(Direction.LEFT, snake.getDirection());
 
-		snake.turnAntiClockwise();
-		assertEquals(0, snake.getVelocity().x);
-		assertEquals(-Snake.VELOCITY, snake.getVelocity().y);
+		snake.turn(Direction.UP);
+		assertEquals(Direction.UP, snake.getDirection());
 	}
 
 	@Test
@@ -75,23 +67,23 @@ public class SnakeTest {
 		snake.feed(); // Generate Tail
 
 		snake.move(); // Move Upwards
-		assertEquals(0, snake.getTail(0).x);
-		assertEquals(0, snake.getTail(0).y);
+		assertEquals(0, snake.getTailLocation(0).x);
+		assertEquals(0, snake.getTailLocation(0).y);
 
 		snake.move(); // Move Upwards
-		assertEquals(0, snake.getTail(0).x);
-		assertEquals(1, snake.getTail(0).y);
+		assertEquals(0, snake.getTailLocation(0).x);
+		assertEquals(1, snake.getTailLocation(0).y);
 	}
 
 	@Test
 	public void testSnakeTailIs1StepBehindWhenTurning() {
 		snake.feed(); // Generate Tail
-
 		snake.move(); // Move Upwards
-		snake.turnClockwise(); // Rotate Clockwise
+		snake.turn(Direction.RIGHT); // Change direction
 		snake.move(); // Move Right
-		assertEquals(0, snake.getTail(0).x);
-		assertEquals(1, snake.getTail(0).y);
+
+		assertEquals(0, snake.getTailLocation(0).x);
+		assertEquals(1, snake.getTailLocation(0).y);
 	}
 
 }

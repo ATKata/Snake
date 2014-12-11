@@ -2,8 +2,6 @@ package snake;
 
 public class Snake {
 
-	public static int VELOCITY = 1;
-
 	public int size() {
 		return 0;
 	}
@@ -11,24 +9,21 @@ public class Snake {
 	public void feed() {
 	}
 
-	public XY getVelocity() {
+	public void turn(Direction direction) {
+	}
+
+	public Direction getDirection() {
 		return null;
 	}
 
-	public void turnAntiClockwise() {
-	}
-
-	public void turnClockwise() {
-	}
-
-	public XY getHead() {
+	public XY getHeadLocation() {
 		return null;
 	}
 
 	public void move() {
 	}
 
-	public XY getTail(int i) {
+	public XY getTailLocation(int i) {
 		return null;
 	}
 
