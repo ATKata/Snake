@@ -27,4 +27,8 @@ public class Snake {
 		return null;
 	}
 
+	public boolean isAlive() {
+		return false;
+	}
+
 }
