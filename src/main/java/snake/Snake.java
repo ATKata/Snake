@@ -3,6 +3,7 @@ package snake;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.List;
 
 
 
@@ -13,14 +14,17 @@ public class Snake {
 	private boolean alive;
 
 	public Snake() {
-		this(new XY(0,0), Direction.UP, new ArrayDeque<XY>(Arrays.asList(new XY(0,0))));
+		this(new XY(0,0), Direction.UP, Arrays.asList(new XY(0,0)));
 	}
 
-	public Snake(XY headLocation, Direction direction, Deque<XY> segments) {
+	public Snake(XY headLocation, Direction direction, Iterable<XY> segments) {
 		super();
 		this.alive = true;
 		this.direction = direction;
-		this.segments = segments;
+		this.segments = new ArrayDeque<XY>();
+		for(XY xy: segments){
+			this.segments.addLast(xy);
+		}
 	}
 
 	public int size() {

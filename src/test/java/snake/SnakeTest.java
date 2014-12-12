@@ -6,8 +6,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class SnakeTest {
 
 	@Test
 	public void testSnakeShouldGrowBy1WhenFed() {
-		Deque<XY> segments = new ArrayDeque<XY>();
+		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0,0));
 		segments.add(new XY(0,-1));
 		snake = new Snake(new XY(0,0), Direction.UP, segments);
@@ -85,7 +85,7 @@ public class SnakeTest {
 
 	@Test
 	public void testSnakeShouldDieWhenItHitsItself() {
-		Deque<XY> segments = new ArrayDeque<XY>();
+		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0,0));
 		segments.add(new XY(0,-1));
 		snake = new Snake(new XY(0,0), Direction.UP, segments);
@@ -96,7 +96,7 @@ public class SnakeTest {
 
 	@Test
 	public void testSnakeShouldDieWhenItHitsItsTail() {
-		Deque<XY> segments = new ArrayDeque<XY>();
+		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0,0));
 		segments.add(new XY(0,-1));
 		segments.add(new XY(0,-2));
