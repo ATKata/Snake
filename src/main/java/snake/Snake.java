@@ -8,7 +8,6 @@ import java.util.Deque;
 
 
 public class Snake {
-	private XY headLocation;
 	private Direction direction;
 	private Deque<XY> segments;
 	private boolean alive;
@@ -20,7 +19,6 @@ public class Snake {
 	public Snake(XY headLocation, Direction direction, Deque<XY> segments) {
 		super();
 		this.alive = true;
-		this.headLocation = headLocation;
 		this.direction = direction;
 		this.segments = segments;
 	}
@@ -29,9 +27,6 @@ public class Snake {
 		return segments.size();
 	}
 
-	private void feed() {
-		segments.addFirst(headLocation);
-	}
 
 	public void turn(Direction direction) {
 		this.direction = direction;
@@ -42,7 +37,7 @@ public class Snake {
 	}
 
 	public XY getHeadLocation() {
-		return headLocation;
+		return segments.getFirst();
 	}
 
 	public void move() {
@@ -53,11 +48,11 @@ public class Snake {
 	}
 
 	public void moveAndFeed() {
-		headLocation = headLocation.add(direction.getXY());
-		if(segments.contains(headLocation)){
+		XY newHeadLocation = getHeadLocation().add(direction.getXY());
+		if(segments.contains(newHeadLocation)){
 			setAlive(false);
 		} else {
-			segments.addFirst(headLocation);
+			segments.addFirst(newHeadLocation);
 		}
 	}
 
