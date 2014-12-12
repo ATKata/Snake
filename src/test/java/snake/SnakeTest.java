@@ -1,10 +1,7 @@
 package snake;
 
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +26,9 @@ public class SnakeTest {
 	@Test
 	public void testSnakeShouldGrowBy1WhenFed() {
 		List<XY> segments = new ArrayList<XY>();
-		segments.add(new XY(0,0));
-		segments.add(new XY(0,-1));
-		snake = new Snake(new XY(0,0), Direction.UP, segments);
+		segments.add(new XY(0, 0));
+		segments.add(new XY(0, -1));
+		snake = new Snake(new XY(0, 0), Direction.UP, segments);
 		assertEquals(2, snake.size());
 	}
 
@@ -47,7 +44,7 @@ public class SnakeTest {
 	}
 
 	@Test
-	public void testSnakeShouldMove() {
+	public void testSnakeShouldMove() throws GameOverException {
 		snake.move(); // Move Upwards
 		assertEquals(0, snake.getHeadLocation().x);
 		assertEquals(1, snake.getHeadLocation().y);
@@ -73,11 +70,11 @@ public class SnakeTest {
 	}
 
 	@Test
-	public void testSnakeShouldGrowAndMoveWhenFed() {
+	public void testSnakeShouldGrowAndMoveWhenFed() throws GameOverException {
 		snake.moveAndFeed();
-		assertThat(snake.getSegments(), contains( new XY(0,1), new XY(0,0)));
+		assertThat(snake.getSegments(), contains(new XY(0, 1), new XY(0, 0)));
 	}
-	
+
 	@Test
 	public void testSnakeInitiallyAlive() {
 		assertTrue(snake.isAlive());
@@ -86,22 +83,27 @@ public class SnakeTest {
 	@Test
 	public void testSnakeShouldDieWhenItHitsItself() {
 		List<XY> segments = new ArrayList<XY>();
-		segments.add(new XY(0,0));
-		segments.add(new XY(0,-1));
-		snake = new Snake(new XY(0,0), Direction.UP, segments);
+		segments.add(new XY(0, 0));
+		segments.add(new XY(0, -1));
+		snake = new Snake(new XY(0, 0), Direction.UP, segments);
 		snake.turn(Direction.DOWN);
-		snake.move();
-		assertFalse(snake.isAlive());
+		try {
+			snake.move();
+			fail("Snake should be dead.");
+		} catch (GameOverException e) {
+			assertFalse(snake.isAlive());
+		}
+
 	}
 
 	@Test
-	public void testSnakeShouldDieWhenItHitsItsTail() {
+	public void testSnakeShouldDieWhenItHitsItsTail() throws GameOverException {
 		List<XY> segments = new ArrayList<XY>();
-		segments.add(new XY(0,0));
-		segments.add(new XY(0,-1));
-		segments.add(new XY(0,-2));
-		segments.add(new XY(0,-3));
-		snake = new Snake(new XY(0,0), Direction.UP, segments);
+		segments.add(new XY(0, 0));
+		segments.add(new XY(0, -1));
+		segments.add(new XY(0, -2));
+		segments.add(new XY(0, -3));
+		snake = new Snake(new XY(0, 0), Direction.UP, segments);
 
 		snake.turn(Direction.RIGHT);
 		snake.move();
@@ -111,9 +113,14 @@ public class SnakeTest {
 		snake.move();
 		assertTrue(snake.isAlive());
 
-		snake.turn(Direction.LEFT);
-		snake.move();
-		assertFalse(snake.isAlive());
+		try {
+			snake.turn(Direction.LEFT);
+			snake.move();
+			fail("Snake should be dead.");
+		} catch (GameOverException e) {
+			assertFalse(snake.isAlive());
+		}
+		
 	}
 
 }

@@ -3,18 +3,14 @@ package snake;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
-import java.util.List;
 
-
-
-
-public class Snake {
+public class Snake implements DrawableSnake {
 	private Direction direction;
 	private Deque<XY> segments;
 	private boolean alive;
 
 	public Snake() {
-		this(new XY(0,0), Direction.UP, Arrays.asList(new XY(0,0)));
+		this(new XY(0, 0), Direction.UP, Arrays.asList(new XY(0, 0)));
 	}
 
 	public Snake(XY headLocation, Direction direction, Iterable<XY> segments) {
@@ -22,7 +18,7 @@ public class Snake {
 		this.alive = true;
 		this.direction = direction;
 		this.segments = new ArrayDeque<XY>();
-		for(XY xy: segments){
+		for (XY xy : segments) {
 			this.segments.addLast(xy);
 		}
 	}
@@ -30,7 +26,6 @@ public class Snake {
 	public int size() {
 		return segments.size();
 	}
-
 
 	public void turn(Direction direction) {
 		this.direction = direction;
@@ -44,20 +39,19 @@ public class Snake {
 		return segments.getFirst();
 	}
 
-	public void move() {
+	public void move() throws GameOverException {
 		moveAndFeed();
-		if(isAlive()){
-			segments.removeLast();
-		}
+		segments.removeLast();
 	}
 
-	public void moveAndFeed() {
+	public void moveAndFeed() throws GameOverException {
 		XY newHeadLocation = getHeadLocation().add(direction.getXY());
-		if(segments.contains(newHeadLocation)){
+		if (segments.contains(newHeadLocation)) {
 			setAlive(false);
-		} else {
-			segments.addFirst(newHeadLocation);
+			throw new GameOverException();
 		}
+		segments.addFirst(newHeadLocation);
+		
 	}
 
 	public XY getTailLocation(int i) {
@@ -74,6 +68,6 @@ public class Snake {
 
 	public Iterable<XY> getSegments() {
 		return segments;
-		
+
 	}
 }
