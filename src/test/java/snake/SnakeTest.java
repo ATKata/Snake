@@ -6,6 +6,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +28,10 @@ public class SnakeTest {
 
 	@Test
 	public void testSnakeShouldGrowBy1WhenFed() {
-		snake.feed();
+		Deque<XY> segments = new ArrayDeque<XY>();
+		segments.add(new XY(0,0));
+		segments.add(new XY(0,-1));
+		snake = new Snake(new XY(0,0), Direction.UP, segments);
 		assertEquals(2, snake.size());
 	}
 
@@ -69,7 +75,7 @@ public class SnakeTest {
 	@Test
 	public void testSnakeShouldGrowAndMoveWhenFed() {
 		snake.moveAndFeed();
-		assertThat(snake.getSegments(), contains());
+		assertThat(snake.getSegments(), contains( new XY(0,1), new XY(0,0)));
 	}
 	
 	@Test
@@ -79,16 +85,23 @@ public class SnakeTest {
 
 	@Test
 	public void testSnakeShouldDieWhenItHitsItself() {
+		Deque<XY> segments = new ArrayDeque<XY>();
+		segments.add(new XY(0,0));
+		segments.add(new XY(0,-1));
+		snake = new Snake(new XY(0,0), Direction.UP, segments);
 		snake.turn(Direction.DOWN);
+		snake.move();
 		assertFalse(snake.isAlive());
 	}
 
 	@Test
 	public void testSnakeShouldDieWhenItHitsItsTail() {
-		snake.feed(); // Generate Tail
-		snake.feed(); // Generate Tail
-		snake.feed(); // Generate Tail
-		snake.feed(); // Generate Tail
+		Deque<XY> segments = new ArrayDeque<XY>();
+		segments.add(new XY(0,0));
+		segments.add(new XY(0,-1));
+		segments.add(new XY(0,-2));
+		segments.add(new XY(0,-3));
+		snake = new Snake(new XY(0,0), Direction.UP, segments);
 
 		snake.turn(Direction.RIGHT);
 		snake.move();

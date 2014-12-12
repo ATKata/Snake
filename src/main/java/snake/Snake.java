@@ -1,16 +1,36 @@
 package snake;
 
-public class Snake {
-	private int size = 1;
-	private XY location = new XY(0, 0);
-	private Direction direction = Direction.UP;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
 
-	public int size() {
-		return size;
+
+
+
+public class Snake {
+	private XY headLocation;
+	private Direction direction;
+	private Deque<XY> segments;
+	private boolean alive;
+
+	public Snake() {
+		this(new XY(0,0), Direction.UP, new ArrayDeque<XY>(Arrays.asList(new XY(0,0))));
 	}
 
-	public void feed() {
-		size++;
+	public Snake(XY headLocation, Direction direction, Deque<XY> segments) {
+		super();
+		this.alive = true;
+		this.headLocation = headLocation;
+		this.direction = direction;
+		this.segments = segments;
+	}
+
+	public int size() {
+		return segments.size();
+	}
+
+	private void feed() {
+		segments.addFirst(headLocation);
 	}
 
 	public void turn(Direction direction) {
@@ -22,11 +42,23 @@ public class Snake {
 	}
 
 	public XY getHeadLocation() {
-		return location;
+		return headLocation;
 	}
 
 	public void move() {
-		location = location.add(direction.getXY());
+		moveAndFeed();
+		if(isAlive()){
+			segments.removeLast();
+		}
+	}
+
+	public void moveAndFeed() {
+		headLocation = headLocation.add(direction.getXY());
+		if(segments.contains(headLocation)){
+			setAlive(false);
+		} else {
+			segments.addFirst(headLocation);
+		}
 	}
 
 	public XY getTailLocation(int i) {
@@ -34,18 +66,15 @@ public class Snake {
 	}
 
 	public boolean isAlive() {
-		return false;
+		return alive;
 	}
 
-	public void moveAndFeed() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not yet implemented");
-		
+	public void setAlive(boolean alive) {
+		this.alive = alive;
 	}
 
 	public Iterable<XY> getSegments() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not yet implemented");
+		return segments;
 		
 	}
 }
