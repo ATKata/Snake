@@ -1,7 +1,9 @@
 package snake;
 
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
@@ -65,28 +67,11 @@ public class SnakeTest {
 	}
 
 	@Test
-	public void testSnakeTailIs1StepBehind() {
-		snake.feed(); // Generate Tail
-
-		assertEquals(0, snake.getTailLocation(0).x);
-		assertEquals(-1, snake.getTailLocation(0).y);
-
-		snake.move(); // Move Upwards
-		assertEquals(0, snake.getTailLocation(0).x);
-		assertEquals(0, snake.getTailLocation(0).y);
+	public void testSnakeShouldGrowAndMoveWhenFed() {
+		snake.moveAndFeed();
+		assertThat(snake.getSegments(), contains());
 	}
-
-	@Test
-	public void testSnakeTailIs1StepBehindWhenTurning() {
-		snake.feed(); // Generate Tail
-		snake.move(); // Move Upwards
-		snake.turn(Direction.RIGHT); // Change direction
-		snake.move(); // Move Right
-
-		assertEquals(0, snake.getTailLocation(0).x);
-		assertEquals(1, snake.getTailLocation(0).y);
-	}
-
+	
 	@Test
 	public void testSnakeInitiallyAlive() {
 		assertTrue(snake.isAlive());
