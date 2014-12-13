@@ -23,7 +23,7 @@ import snake.GameOverException;
 import snake.Snake;
 import snake.XY;
 
-public class Grid extends Component {
+public class Grid extends Component implements KeyListener {
 	private boolean gameRunning;
 	private DrawableSnake snake;
 	private BufferedImage currentFrame;
@@ -59,38 +59,69 @@ public class Grid extends Component {
 				currentFrame.setRGB(pixelX, pixelY, Color.WHITE.getRGB());
 			} else {
 				gameRunning = false;
-				break;
 			}
 		}
 		BufferedImage pixelData = scaleOp.filter(currentFrame, null);
 		if (!gameRunning) {
-			Graphics2D graphics2d = pixelData.createGraphics();
-			graphics2d.setFont(new Font("Sans Serif", Font.BOLD, 30));
-			graphics2d.setColor(Color.WHITE);
-			graphics2d
-					.drawString("Game Over", xOffset * scale, yOffset * scale);
-			graphics2d.dispose();
+			writeGameOver(pixelData);
 		}
 		g.drawImage(pixelData, 0, 0, null);
+	}
 
+	public Dimension getPreferredSize() {
+		return new Dimension(currentFrame.getWidth(null) * scale,
+				currentFrame.getHeight(null) * scale);
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		switch (e.getKeyChar()) {
+		case 'z':
+			snake.turn(Direction.LEFT);
+			break;
+		case 'x':
+			snake.turn(Direction.RIGHT);
+			break;
+		case 'l':
+			snake.turn(Direction.UP);
+			break;
+		case ',':
+			snake.turn(Direction.DOWN);
+			break;
+		default:
+			break;
+		}
+		System.out.println("Pressed " + e.getKeyChar());
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	private void writeGameOver(BufferedImage pixelData) {
+		Graphics2D graphics2d = pixelData.createGraphics();
+		graphics2d.setFont(new Font("Sans Serif", Font.BOLD, 30));
+		graphics2d.setColor(Color.WHITE);
+		graphics2d.drawString("Game Over", xOffset * scale, yOffset * scale);
+		graphics2d.dispose();
 	}
 
 	private boolean inBounds(int x, int y) {
 		return x >= 0 && y >= 0 && x <= width && y <= height;
-
-	}
-
-	public Dimension getPreferredSize() {
-		if (currentFrame == null) {
-			return new Dimension(100, 100);
-		} else {
-			return new Dimension(currentFrame.getWidth(null) * scale,
-					currentFrame.getHeight(null) * scale);
-		}
 	}
 
 	private boolean isGameRunning() {
 		return gameRunning;
+	}
+
+	private void setGameRunning(boolean b) {
+		gameRunning = b;
 	}
 
 	public static void main(String[] args) throws InterruptedException {
@@ -103,45 +134,13 @@ public class Grid extends Component {
 			}
 		});
 
-		DrawableSnake snake = new Snake(new XY(0, 0), Direction.LEFT, Arrays.asList(
-				new XY(0, 0), new XY(0, -1)));
+		DrawableSnake snake = new Snake(new XY(0, 0), Direction.LEFT,
+				Arrays.asList(new XY(0, 0), new XY(0, -1)));
 		// Snake snake = new Snake();
 		Grid grid = new Grid(snake, 100, 100);
 
 		f.add(grid);
-		f.addKeyListener(new KeyListener() {
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				switch (e.getKeyChar()) {
-				case 'z':
-					snake.turn(Direction.LEFT);
-					break;
-				case 'x':
-					snake.turn(Direction.RIGHT);
-					break;
-				case 'l':
-					snake.turn(Direction.UP);
-					break;
-				case ',':
-					snake.turn(Direction.DOWN);
-					break;
-				default:
-					break;
-				}
-				System.out.println("Pressed " + e.getKeyChar());
-			}
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-			}
-		});
+		f.addKeyListener(grid);
 
 		f.pack();
 		f.setVisible(true);
@@ -157,11 +156,6 @@ public class Grid extends Component {
 			}
 			f.repaint();
 		}
-	}
-
-	private void setGameRunning(boolean b) {
-		gameRunning = b;
-
 	}
 
 }
