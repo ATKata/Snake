@@ -1,6 +1,7 @@
 package snake;
 
 import static org.hamcrest.Matchers.contains;
+
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.mockito.Mockito.*;
 
 public class SnakeTest {
 
@@ -74,9 +77,10 @@ public class SnakeTest {
 		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0, 0));
 		Food food = new Food();
+		GameModel mockGameModel = mock(GameModel.class);
+		food.setGameModelAndRandomiseLocation(mockGameModel);
 		food.setLocation(new XY(0,1));
 		snake = new Snake(new XY(0, 0), Direction.UP, segments, food);
-		food.setSnake(snake);
 		snake.move();
 		assertThat(snake.getSegments(), contains(new XY(0, 1), new XY(0, 0)));
 	}

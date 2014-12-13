@@ -57,6 +57,7 @@ public class Snake implements DrawableSnake {
 
 	}
 
+	@Override
 	public boolean isSnake(XY location) {
 		return segments.contains(location);
 	}

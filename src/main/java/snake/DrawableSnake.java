@@ -1,9 +1,11 @@
 package snake;
 
 public interface DrawableSnake {
-	Iterable<XY> getSegments();
+	public Iterable<XY> getSegments();
 
-	void turn(Direction direction);
+	public void turn(Direction direction);
 
-	void move() throws GameOverException;
+	public void move() throws GameOverException;
+
+	public boolean isSnake(XY newLocation);
 }

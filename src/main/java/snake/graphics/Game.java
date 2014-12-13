@@ -20,11 +20,12 @@ import javax.swing.JFrame;
 import snake.Direction;
 import snake.DrawableSnake;
 import snake.Food;
+import snake.GameModel;
 import snake.GameOverException;
 import snake.Snake;
 import snake.XY;
 
-public class Game extends Component implements KeyListener {
+public class Game extends Component implements KeyListener, GameModel {
 	private boolean gameRunning;
 	private DrawableSnake snake;
 	private Food food;
@@ -128,6 +129,19 @@ public class Game extends Component implements KeyListener {
 		return x >= 0 && y >= 0 && x < width && y < height;
 	}
 
+	@Override
+	public XY generateRandomCoordinate() {
+		XY result = null;
+		while (result == null) {
+			XY newLocation = new XY((int) (Math.random() * width) - xOffset,
+					(int) -(Math.random() * height) + yOffset);
+			if (snake == null || !snake.isSnake(newLocation)) {
+				result = newLocation;
+			}
+		}
+		return result;
+	}
+
 	private boolean isGameRunning() {
 		return gameRunning;
 	}
@@ -146,17 +160,17 @@ public class Game extends Component implements KeyListener {
 			}
 		});
 
-		int width = 50;
-		int height = 50;
-		
-		
-		Food food = new Food(width,height);
-		//food.setLocation(new XY(width/2,-height/2+1));
-		Snake snake = new Snake(new XY(0, 0), Direction.LEFT,
-				Arrays.asList(new XY(0, 0), new XY(0, -1)), food);
+		int width = 10;
+		int height = 10;
+
+		Food food = new Food();
+
+		Snake snake = new Snake(new XY(0, 0), Direction.LEFT, Arrays.asList(
+				new XY(0, 0), new XY(0, -1)), food);
 		// Snake snake = new Snake();
-		food.setSnake(snake);
 		Game game = new Game(snake, food, width, height);
+		food.setGameModelAndRandomiseLocation(game);
+		food.setLocation(new XY(width / 2 - 1, -height / 2 + 1));
 
 		f.add(game);
 		f.addKeyListener(game);
@@ -165,7 +179,7 @@ public class Game extends Component implements KeyListener {
 		f.setVisible(true);
 
 		while (true) {
-			Thread.sleep(100);
+			Thread.sleep(1000);
 			if (game.isGameRunning()) {
 				try {
 					snake.move();
