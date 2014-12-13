@@ -46,15 +46,18 @@ public class Snake implements DrawableSnake {
 	}
 
 	@Override
-	public void move() throws GameOverException {
+	public boolean move() throws GameOverException {
+		boolean eats;
 		XY newHeadLocation = getHeadLocation().add(direction.getXY());
 		if (isSnake(newHeadLocation)) {
 			throw new GameOverException();
 		}
 		segments.addFirst(newHeadLocation);
-		if (!gameModel.eat(newHeadLocation)) {
+		eats = gameModel.eat(newHeadLocation);
+		if (!eats) {
 			segments.removeLast();
 		}
+		return eats;
 	}
 
 	@Override

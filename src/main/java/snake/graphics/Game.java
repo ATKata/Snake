@@ -11,9 +11,11 @@ import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import snake.Direction;
 import snake.DrawableFood;
@@ -29,21 +31,37 @@ public class Game extends Component implements KeyListener, GameModel {
 	private DrawableSnake snake;
 	private DrawableFood food;
 	private BufferedImage currentFrame;
-	private int scale = 10;
+	private int scale = 20;
 	private AffineTransformOp scaleOp;
 	private int width;
 	private int height;
 	private int xOffset;
 	private int yOffset;
+	private long sleepTime;
+	private int score;
 
-	public Game(DrawableSnake snake, DrawableFood food, int width, int height) {
+	public Game(int width, int height) {
+		init(width, height);
+	}
+
+	private void init(int width, int height) {
+		this.score = 0;
 		this.width = width;
 		this.height = height;
 		this.xOffset = width / 2;
 		this.yOffset = height / 2;
-		this.snake = snake;
-		this.food = food;
 		this.gameRunning = true;
+
+		this.snake = new Snake(new XY(0, 0), Direction.LEFT, Arrays.asList(
+				new XY(0, 0), new XY(0, -1)));
+
+		this.food = new Food();
+
+		this.food.setGameModelAndRandomiseLocation(this);
+		this.snake.setGameModel(this);
+
+		this.sleepTime = 100;
+
 		this.currentFrame = new BufferedImage(width, height,
 				BufferedImage.TYPE_INT_RGB);
 		AffineTransform at = new AffineTransform();
@@ -61,14 +79,14 @@ public class Game extends Component implements KeyListener, GameModel {
 		drawFood();
 
 		BufferedImage pixelData = scaleOp.filter(currentFrame, null);
-		
+
 		if (!gameRunning) {
 			writeGameOver(pixelData);
 		}
-		
+
 		g.drawImage(pixelData, 0, 0, null);
 	}
-	
+
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(currentFrame.getWidth(null) * scale,
@@ -89,6 +107,9 @@ public class Game extends Component implements KeyListener, GameModel {
 			break;
 		case ',':
 			snake.turn(Direction.DOWN);
+			break;
+		case 'r':
+			this.init(width, height);
 			break;
 		default:
 			break;
@@ -126,7 +147,17 @@ public class Game extends Component implements KeyListener, GameModel {
 		}
 		return success;
 	}
-	
+
+	@Override
+	public void tick() throws GameOverException {
+		if (snake.move()) {
+			score++;
+			if (sleepTime > 0) {
+				sleepTime--;
+			}
+		}
+	}
+
 	private void drawFood() {
 		XY foodXY = food.getLocation();
 		if (foodXY != null) {
@@ -152,7 +183,7 @@ public class Game extends Component implements KeyListener, GameModel {
 		Graphics2D graphics2d = pixelData.createGraphics();
 		graphics2d.setFont(new Font("Sans Serif", Font.BOLD, 30));
 		graphics2d.setColor(Color.WHITE);
-		graphics2d.drawString("Game Over", 50, 50);
+		graphics2d.drawString("Game Over - Score: " + score, 50, 50);
 		graphics2d.dispose();
 	}
 
@@ -168,39 +199,50 @@ public class Game extends Component implements KeyListener, GameModel {
 		gameRunning = b;
 	}
 
-	public static void main(String[] args) throws InterruptedException {
+	private long getSleepTime() {
+		return sleepTime;
 
-		JFrame f = new JFrame("Snake");
+	}
 
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+	public static void main(String[] args) throws InvocationTargetException,
+			InterruptedException {
 		int width = 50;
 		int height = 50;
 
-		DrawableSnake snake = new Snake(new XY(0, 0), Direction.LEFT, Arrays.asList(
-				new XY(0, 0), new XY(0, -1)));
-		DrawableFood food = new Food();
-		Game game = new Game(snake, food, width, height);
-		food.setGameModelAndRandomiseLocation(game);
-		snake.setGameModel(game);
+		JFrame f = new JFrame("Snake");
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.setResizable(false);
 
-		f.add(game);
-		f.addKeyListener(game);
+		Game game = new Game(width, height);
 
-		f.pack();
-		f.setVisible(true);
+		SwingUtilities.invokeAndWait(() -> {
+			f.add(game);
+			f.addKeyListener(game);
 
-		while (true) {
-			Thread.sleep(100);
-			if (game.isGameRunning()) {
+			f.pack();
+			f.setVisible(true);
+		});
+
+		Thread animationThread = new Thread(() -> {
+			while (true) {
 				try {
-					snake.move();
-				} catch (GameOverException e) {
-					game.setGameRunning(false);
+					Thread.sleep(game.getSleepTime());
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
+				if (game.isGameRunning()) {
+					try {
+						game.tick();
+					} catch (GameOverException e) {
+						game.setGameRunning(false);
+					}
+				}
+				f.repaint();
 			}
-			f.repaint();
-		}
+		});
+
+		animationThread.start();
+
 	}
 
 }

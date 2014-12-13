@@ -5,7 +5,7 @@ public interface DrawableSnake {
 
 	public void turn(Direction direction);
 
-	public void move() throws GameOverException;
+	public boolean move() throws GameOverException;
 
 	public boolean isSnake(XY newLocation);
 
