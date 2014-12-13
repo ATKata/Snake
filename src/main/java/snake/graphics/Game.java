@@ -19,13 +19,15 @@ import javax.swing.JFrame;
 
 import snake.Direction;
 import snake.DrawableSnake;
+import snake.Food;
 import snake.GameOverException;
 import snake.Snake;
 import snake.XY;
 
-public class Grid extends Component implements KeyListener {
+public class Game extends Component implements KeyListener {
 	private boolean gameRunning;
 	private DrawableSnake snake;
+	private Food food;
 	private BufferedImage currentFrame;
 	private int scale = 10;
 	private AffineTransformOp scaleOp;
@@ -34,12 +36,13 @@ public class Grid extends Component implements KeyListener {
 	private int xOffset;
 	private int yOffset;
 
-	public Grid(DrawableSnake snake, int width, int height) {
+	public Game(DrawableSnake snake, Food food, int width, int height) {
 		this.width = width;
 		this.height = height;
 		this.xOffset = width / 2;
-		this.yOffset = width / 2;
+		this.yOffset = height / 2;
 		this.snake = snake;
+		this.food = food;
 		this.gameRunning = true;
 		this.currentFrame = new BufferedImage(width, height,
 				BufferedImage.TYPE_INT_RGB);
@@ -52,6 +55,7 @@ public class Grid extends Component implements KeyListener {
 	public void paint(Graphics g) {
 		currentFrame = new BufferedImage(width, height,
 				BufferedImage.TYPE_INT_RGB);
+
 		for (XY segment : snake.getSegments()) {
 			int pixelX = segment.x + xOffset;
 			int pixelY = -segment.y + yOffset;
@@ -61,6 +65,14 @@ public class Grid extends Component implements KeyListener {
 				gameRunning = false;
 			}
 		}
+
+		XY foodXY = food.getLocation();
+		if (foodXY != null) {
+			int pixelX = foodXY.x + xOffset;
+			int pixelY = -foodXY.y + yOffset;
+			currentFrame.setRGB(pixelX, pixelY, Color.RED.getRGB());
+		}
+
 		BufferedImage pixelData = scaleOp.filter(currentFrame, null);
 		if (!gameRunning) {
 			writeGameOver(pixelData);
@@ -68,6 +80,7 @@ public class Grid extends Component implements KeyListener {
 		g.drawImage(pixelData, 0, 0, null);
 	}
 
+	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(currentFrame.getWidth(null) * scale,
 				currentFrame.getHeight(null) * scale);
@@ -91,7 +104,6 @@ public class Grid extends Component implements KeyListener {
 		default:
 			break;
 		}
-		System.out.println("Pressed " + e.getKeyChar());
 	}
 
 	@Override
@@ -113,7 +125,7 @@ public class Grid extends Component implements KeyListener {
 	}
 
 	private boolean inBounds(int x, int y) {
-		return x >= 0 && y >= 0 && x <= width && y <= height;
+		return x >= 0 && y >= 0 && x < width && y < height;
 	}
 
 	private boolean isGameRunning() {
@@ -134,24 +146,31 @@ public class Grid extends Component implements KeyListener {
 			}
 		});
 
-		DrawableSnake snake = new Snake(new XY(0, 0), Direction.LEFT,
-				Arrays.asList(new XY(0, 0), new XY(0, -1)));
+		int width = 50;
+		int height = 50;
+		
+		
+		Food food = new Food(width,height);
+		//food.setLocation(new XY(width/2,-height/2+1));
+		Snake snake = new Snake(new XY(0, 0), Direction.LEFT,
+				Arrays.asList(new XY(0, 0), new XY(0, -1)), food);
 		// Snake snake = new Snake();
-		Grid grid = new Grid(snake, 100, 100);
+		food.setSnake(snake);
+		Game game = new Game(snake, food, width, height);
 
-		f.add(grid);
-		f.addKeyListener(grid);
+		f.add(game);
+		f.addKeyListener(game);
 
 		f.pack();
 		f.setVisible(true);
 
 		while (true) {
 			Thread.sleep(100);
-			if (grid.isGameRunning()) {
+			if (game.isGameRunning()) {
 				try {
 					snake.move();
 				} catch (GameOverException e) {
-					grid.setGameRunning(false);
+					game.setGameRunning(false);
 				}
 			}
 			f.repaint();

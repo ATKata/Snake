@@ -28,7 +28,7 @@ public class SnakeTest {
 		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0, 0));
 		segments.add(new XY(0, -1));
-		snake = new Snake(new XY(0, 0), Direction.UP, segments);
+		snake = new Snake(new XY(0, 0), Direction.UP, segments, new Food());
 		assertEquals(2, snake.size());
 	}
 
@@ -71,56 +71,48 @@ public class SnakeTest {
 
 	@Test
 	public void testSnakeShouldGrowAndMoveWhenFed() throws GameOverException {
-		snake.moveAndFeed();
+		List<XY> segments = new ArrayList<XY>();
+		segments.add(new XY(0, 0));
+		Food food = new Food();
+		food.setLocation(new XY(0,1));
+		snake = new Snake(new XY(0, 0), Direction.UP, segments, food);
+		food.setSnake(snake);
+		snake.move();
 		assertThat(snake.getSegments(), contains(new XY(0, 1), new XY(0, 0)));
 	}
 
-	@Test
-	public void testSnakeInitiallyAlive() {
-		assertTrue(snake.isAlive());
-	}
-
-	@Test
-	public void testSnakeShouldDieWhenItHitsItself() {
+	@Test(expected = GameOverException.class)
+	public void testSnakeShouldDieWhenItHitsItself() throws GameOverException {
 		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0, 0));
 		segments.add(new XY(0, -1));
-		snake = new Snake(new XY(0, 0), Direction.UP, segments);
+		snake = new Snake(new XY(0, 0), Direction.UP, segments, new Food());
 		snake.turn(Direction.DOWN);
-		try {
-			snake.move();
-			fail("Snake should be dead.");
-		} catch (GameOverException e) {
-			assertFalse(snake.isAlive());
-		}
-
+		snake.move();
 	}
 
-	@Test
+	@Test(expected=GameOverException.class)
 	public void testSnakeShouldDieWhenItHitsItsTail() throws GameOverException {
 		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0, 0));
 		segments.add(new XY(0, -1));
 		segments.add(new XY(0, -2));
 		segments.add(new XY(0, -3));
-		snake = new Snake(new XY(0, 0), Direction.UP, segments);
-
-		snake.turn(Direction.RIGHT);
-		snake.move();
-		assertTrue(snake.isAlive());
-
-		snake.turn(Direction.DOWN);
-		snake.move();
-		assertTrue(snake.isAlive());
+		snake = new Snake(new XY(0, 0), Direction.UP, segments, new Food());
 
 		try {
-			snake.turn(Direction.LEFT);
+			snake.turn(Direction.RIGHT);
 			snake.move();
-			fail("Snake should be dead.");
+
+			snake.turn(Direction.DOWN);
+			snake.move();
 		} catch (GameOverException e) {
-			assertFalse(snake.isAlive());
+			fail("Snake should still be alive.");
 		}
-		
+
+		snake.turn(Direction.LEFT);
+		snake.move();
+
 	}
 
 }
