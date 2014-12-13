@@ -117,18 +117,6 @@ public class Game extends Component implements KeyListener, GameModel {
 		// TODO Auto-generated method stub
 	}
 
-	private void writeGameOver(BufferedImage pixelData) {
-		Graphics2D graphics2d = pixelData.createGraphics();
-		graphics2d.setFont(new Font("Sans Serif", Font.BOLD, 30));
-		graphics2d.setColor(Color.WHITE);
-		graphics2d.drawString("Game Over", xOffset * scale, yOffset * scale);
-		graphics2d.dispose();
-	}
-
-	private boolean inBounds(int x, int y) {
-		return x >= 0 && y >= 0 && x < width && y < height;
-	}
-
 	@Override
 	public XY generateRandomCoordinate() {
 		XY result = null;
@@ -141,6 +129,19 @@ public class Game extends Component implements KeyListener, GameModel {
 		}
 		return result;
 	}
+	
+	private void writeGameOver(BufferedImage pixelData) {
+		Graphics2D graphics2d = pixelData.createGraphics();
+		graphics2d.setFont(new Font("Sans Serif", Font.BOLD, 30));
+		graphics2d.setColor(Color.WHITE);
+		graphics2d.drawString("Game Over", xOffset * scale, yOffset * scale);
+		graphics2d.dispose();
+	}
+
+	private boolean inBounds(int x, int y) {
+		return x >= 0 && y >= 0 && x < width && y < height;
+	}
+
 
 	private boolean isGameRunning() {
 		return gameRunning;
@@ -154,14 +155,10 @@ public class Game extends Component implements KeyListener, GameModel {
 
 		JFrame f = new JFrame("Snake");
 
-		f.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-		});
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		int width = 10;
-		int height = 10;
+		int width = 50;
+		int height = 50;
 
 		Food food = new Food();
 
@@ -170,7 +167,7 @@ public class Game extends Component implements KeyListener, GameModel {
 		// Snake snake = new Snake();
 		Game game = new Game(snake, food, width, height);
 		food.setGameModelAndRandomiseLocation(game);
-		food.setLocation(new XY(width / 2 - 1, -height / 2 + 1));
+		//food.setLocation(new XY(width / 2 - 1, -height / 2 + 1));
 
 		f.add(game);
 		f.addKeyListener(game);
@@ -179,7 +176,7 @@ public class Game extends Component implements KeyListener, GameModel {
 		f.setVisible(true);
 
 		while (true) {
-			Thread.sleep(1000);
+			Thread.sleep(100);
 			if (game.isGameRunning()) {
 				try {
 					snake.move();
