@@ -8,4 +8,6 @@ public interface DrawableSnake {
 	public void move() throws GameOverException;
 
 	public boolean isSnake(XY newLocation);
+
+	public void setGameModel(GameModel game);
 }

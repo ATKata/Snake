@@ -2,6 +2,7 @@ package snake;
 
 public interface GameModel {
 
-	XY generateRandomCoordinate();
+	public XY generateRandomCoordinate();
 
+	public boolean eat(XY newHeadLocation);
 }

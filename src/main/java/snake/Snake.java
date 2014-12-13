@@ -7,28 +7,32 @@ import java.util.Deque;
 public class Snake implements DrawableSnake {
 	private Direction direction;
 	private Deque<XY> segments;
-	private Food food;
+	private GameModel gameModel;
+
 
 	public Snake() {
-		this(new XY(0, 0), Direction.UP, Arrays.asList(new XY(0, 0)),
-				new Food());
+		this(new XY(0, 0), Direction.UP, Arrays.asList(new XY(0, 0)));
 	}
 
-	public Snake(XY headLocation, Direction direction, Iterable<XY> segments,
-			Food food) {
+	public Snake(XY headLocation, Direction direction, Iterable<XY> segments) {
 		super();
 		this.direction = direction;
 		this.segments = new ArrayDeque<XY>();
 		for (XY xy : segments) {
 			this.segments.addLast(xy);
 		}
-		this.food = food;
+	}
+
+	@Override
+	public void setGameModel(GameModel gameModel) {
+		this.gameModel = gameModel;
 	}
 
 	public int size() {
 		return segments.size();
 	}
 
+	@Override
 	public void turn(Direction direction) {
 		this.direction = direction;
 	}
@@ -41,17 +45,19 @@ public class Snake implements DrawableSnake {
 		return segments.getFirst();
 	}
 
+	@Override
 	public void move() throws GameOverException {
 		XY newHeadLocation = getHeadLocation().add(direction.getXY());
 		if (isSnake(newHeadLocation)) {
 			throw new GameOverException();
 		}
 		segments.addFirst(newHeadLocation);
-		if (!food.eat(newHeadLocation)) {
+		if (!gameModel.eat(newHeadLocation)) {
 			segments.removeLast();
 		}
 	}
 
+	@Override
 	public Iterable<XY> getSegments() {
 		return segments;
 

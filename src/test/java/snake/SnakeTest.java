@@ -31,7 +31,7 @@ public class SnakeTest {
 		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0, 0));
 		segments.add(new XY(0, -1));
-		snake = new Snake(new XY(0, 0), Direction.UP, segments, new Food());
+		snake = new Snake(new XY(0, 0), Direction.UP, segments);
 		assertEquals(2, snake.size());
 	}
 
@@ -48,6 +48,8 @@ public class SnakeTest {
 
 	@Test
 	public void testSnakeShouldMove() throws GameOverException {
+		GameModel mockGameModel = mock(GameModel.class);
+		snake.setGameModel(mockGameModel);
 		snake.move(); // Move Upwards
 		assertEquals(0, snake.getHeadLocation().x);
 		assertEquals(1, snake.getHeadLocation().y);
@@ -76,11 +78,10 @@ public class SnakeTest {
 	public void testSnakeShouldGrowAndMoveWhenFed() throws GameOverException {
 		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0, 0));
-		Food food = new Food();
 		GameModel mockGameModel = mock(GameModel.class);
-		food.setGameModelAndRandomiseLocation(mockGameModel);
-		food.setLocation(new XY(0,1));
-		snake = new Snake(new XY(0, 0), Direction.UP, segments, food);
+		when(mockGameModel.eat(any())).thenReturn(true);
+		snake = new Snake(new XY(0, 0), Direction.UP, segments);
+		snake.setGameModel(mockGameModel);
 		snake.move();
 		assertThat(snake.getSegments(), contains(new XY(0, 1), new XY(0, 0)));
 	}
@@ -90,20 +91,21 @@ public class SnakeTest {
 		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0, 0));
 		segments.add(new XY(0, -1));
-		snake = new Snake(new XY(0, 0), Direction.UP, segments, new Food());
+		snake = new Snake(new XY(0, 0), Direction.UP, segments);
 		snake.turn(Direction.DOWN);
 		snake.move();
 	}
 
 	@Test(expected=GameOverException.class)
 	public void testSnakeShouldDieWhenItHitsItsTail() throws GameOverException {
+		GameModel mockGameModel = mock(GameModel.class);
 		List<XY> segments = new ArrayList<XY>();
 		segments.add(new XY(0, 0));
 		segments.add(new XY(0, -1));
 		segments.add(new XY(0, -2));
 		segments.add(new XY(0, -3));
-		snake = new Snake(new XY(0, 0), Direction.UP, segments, new Food());
-
+		snake = new Snake(new XY(0, 0), Direction.UP, segments);
+		snake.setGameModel(mockGameModel);
 		try {
 			snake.turn(Direction.RIGHT);
 			snake.move();

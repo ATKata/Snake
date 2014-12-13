@@ -8,8 +8,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -18,6 +16,7 @@ import java.util.Arrays;
 import javax.swing.JFrame;
 
 import snake.Direction;
+import snake.DrawableFood;
 import snake.DrawableSnake;
 import snake.Food;
 import snake.GameModel;
@@ -28,7 +27,7 @@ import snake.XY;
 public class Game extends Component implements KeyListener, GameModel {
 	private boolean gameRunning;
 	private DrawableSnake snake;
-	private Food food;
+	private DrawableFood food;
 	private BufferedImage currentFrame;
 	private int scale = 10;
 	private AffineTransformOp scaleOp;
@@ -37,7 +36,7 @@ public class Game extends Component implements KeyListener, GameModel {
 	private int xOffset;
 	private int yOffset;
 
-	public Game(DrawableSnake snake, Food food, int width, int height) {
+	public Game(DrawableSnake snake, DrawableFood food, int width, int height) {
 		this.width = width;
 		this.height = height;
 		this.xOffset = width / 2;
@@ -57,30 +56,19 @@ public class Game extends Component implements KeyListener, GameModel {
 		currentFrame = new BufferedImage(width, height,
 				BufferedImage.TYPE_INT_RGB);
 
-		for (XY segment : snake.getSegments()) {
-			int pixelX = segment.x + xOffset;
-			int pixelY = -segment.y + yOffset;
-			if (inBounds(pixelX, pixelY)) {
-				currentFrame.setRGB(pixelX, pixelY, Color.WHITE.getRGB());
-			} else {
-				gameRunning = false;
-			}
-		}
+		drawSnake();
 
-		XY foodXY = food.getLocation();
-		if (foodXY != null) {
-			int pixelX = foodXY.x + xOffset;
-			int pixelY = -foodXY.y + yOffset;
-			currentFrame.setRGB(pixelX, pixelY, Color.RED.getRGB());
-		}
+		drawFood();
 
 		BufferedImage pixelData = scaleOp.filter(currentFrame, null);
+		
 		if (!gameRunning) {
 			writeGameOver(pixelData);
 		}
+		
 		g.drawImage(pixelData, 0, 0, null);
 	}
-
+	
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(currentFrame.getWidth(null) * scale,
@@ -129,19 +117,48 @@ public class Game extends Component implements KeyListener, GameModel {
 		}
 		return result;
 	}
+
+	@Override
+	public boolean eat(XY location) {
+		boolean success = food.getLocation().equals(location);
+		if (success) {
+			food.setLocation(generateRandomCoordinate());
+		}
+		return success;
+	}
 	
+	private void drawFood() {
+		XY foodXY = food.getLocation();
+		if (foodXY != null) {
+			int pixelX = foodXY.x + xOffset;
+			int pixelY = -foodXY.y + yOffset;
+			currentFrame.setRGB(pixelX, pixelY, Color.RED.getRGB());
+		}
+	}
+
+	private void drawSnake() {
+		for (XY segment : snake.getSegments()) {
+			int pixelX = segment.x + xOffset;
+			int pixelY = -segment.y + yOffset;
+			if (inBounds(pixelX, pixelY)) {
+				currentFrame.setRGB(pixelX, pixelY, Color.WHITE.getRGB());
+			} else {
+				gameRunning = false;
+			}
+		}
+	}
+
 	private void writeGameOver(BufferedImage pixelData) {
 		Graphics2D graphics2d = pixelData.createGraphics();
 		graphics2d.setFont(new Font("Sans Serif", Font.BOLD, 30));
 		graphics2d.setColor(Color.WHITE);
-		graphics2d.drawString("Game Over", xOffset * scale, yOffset * scale);
+		graphics2d.drawString("Game Over", 50, 50);
 		graphics2d.dispose();
 	}
 
 	private boolean inBounds(int x, int y) {
 		return x >= 0 && y >= 0 && x < width && y < height;
 	}
-
 
 	private boolean isGameRunning() {
 		return gameRunning;
@@ -160,14 +177,12 @@ public class Game extends Component implements KeyListener, GameModel {
 		int width = 50;
 		int height = 50;
 
-		Food food = new Food();
-
-		Snake snake = new Snake(new XY(0, 0), Direction.LEFT, Arrays.asList(
-				new XY(0, 0), new XY(0, -1)), food);
-		// Snake snake = new Snake();
+		DrawableSnake snake = new Snake(new XY(0, 0), Direction.LEFT, Arrays.asList(
+				new XY(0, 0), new XY(0, -1)));
+		DrawableFood food = new Food();
 		Game game = new Game(snake, food, width, height);
 		food.setGameModelAndRandomiseLocation(game);
-		//food.setLocation(new XY(width / 2 - 1, -height / 2 + 1));
+		snake.setGameModel(game);
 
 		f.add(game);
 		f.addKeyListener(game);
