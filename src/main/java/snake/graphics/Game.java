@@ -30,13 +30,13 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 	private boolean gameRunning;
 	private DrawableSnake snake;
 	private DrawableFood food;
-	
+
 	private int scale = 20;
 	private int width;
 	private int height;
 	private int xOffset;
 	private int yOffset;
-	
+
 	private long sleepTime;
 	private int score;
 	private Thread animationThread;
@@ -62,13 +62,13 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 		this.snake.setGameModel(this);
 
 		this.sleepTime = 100;
-		
+
 		animationThread = new Thread(this);
 	}
 
 	public void paint(Graphics g) {
-		BufferedImage pixelData = new BufferedImage(width*scale, height*scale,
-				BufferedImage.TYPE_INT_RGB);
+		BufferedImage pixelData = new BufferedImage(width * scale, height
+				* scale, BufferedImage.TYPE_INT_RGB);
 
 		drawSnake(pixelData.getGraphics());
 
@@ -85,8 +85,7 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 
 	@Override
 	public Dimension getPreferredSize() {
-		return new Dimension(width * scale,
-				height * scale);
+		return new Dimension(width * scale, height * scale);
 	}
 
 	@Override
@@ -147,6 +146,9 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 	public void tick() throws GameOverException {
 		if (snake.move()) {
 			score++;
+			if (sleepTime > 0) {
+				sleepTime--;
+			}
 		}
 	}
 
@@ -162,29 +164,26 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 		init(width, height);
 		animationThread.start();
 	}
-	
+
 	@Override
 	public void run() {
 		{
 			while (true) {
 				try {
 					Thread.sleep(sleepTime);
-				} catch (InterruptedException e1) {
-					return;
-				}
-				
-				if (gameRunning) {
-					try {
+					if (gameRunning) {
 						tick();
-					} catch (GameOverException e) {
-						gameRunning = false;
 					}
+				} catch (InterruptedException | GameOverException e) {
+					gameRunning = false;
+					return;
+				} finally {
+					repaint();
 				}
-				repaint();
 			}
-		}		
+		}
 	}
-	
+
 	private void drawFood(Graphics graphics) {
 		XY foodXY = food.getLocation();
 		if (foodXY != null) {
@@ -218,7 +217,7 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 	private boolean inBounds(int x, int y) {
 		return x >= 0 && y >= 0 && x < width * scale && y < height * scale;
 	}
-	
+
 	private void start() {
 		animationThread.start();
 	}
@@ -237,13 +236,11 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 		SwingUtilities.invokeAndWait(() -> {
 			f.add(game);
 			f.addKeyListener(game);
-
 			f.pack();
 			f.setVisible(true);
 		});
 
 		game.start();
 	}
-
 
 }
