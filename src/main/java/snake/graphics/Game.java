@@ -30,13 +30,13 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 	private boolean gameRunning;
 	private DrawableSnake snake;
 	private DrawableFood food;
-	private BufferedImage currentFrame;
+	
 	private int scale = 20;
-	private AffineTransformOp scaleOp;
 	private int width;
 	private int height;
 	private int xOffset;
 	private int yOffset;
+	
 	private long sleepTime;
 	private int score;
 	private Thread animationThread;
@@ -62,21 +62,13 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 		this.snake.setGameModel(this);
 
 		this.sleepTime = 100;
-
-		this.currentFrame = new BufferedImage(width, height,
-				BufferedImage.TYPE_INT_RGB);
-		AffineTransform at = new AffineTransform();
-		at.scale(scale, scale);
-		scaleOp = new AffineTransformOp(at,
-				AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		
 		animationThread = new Thread(this);
 	}
 
 	public void paint(Graphics g) {
-		currentFrame = new BufferedImage(width, height,
+		BufferedImage pixelData = new BufferedImage(width*scale, height*scale,
 				BufferedImage.TYPE_INT_RGB);
-
-		BufferedImage pixelData = scaleOp.filter(currentFrame, null);
 
 		drawSnake(pixelData.getGraphics());
 
@@ -93,8 +85,8 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 
 	@Override
 	public Dimension getPreferredSize() {
-		return new Dimension(currentFrame.getWidth(null) * scale,
-				currentFrame.getHeight(null) * scale);
+		return new Dimension(width * scale,
+				height * scale);
 	}
 
 	@Override
@@ -113,16 +105,7 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 			snake.turn(Direction.DOWN);
 			break;
 		case 'r':
-			gameRunning = false;
-			animationThread.interrupt();
-			try {
-				animationThread.join();
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			init(width, height);
-			animationThread.start();
+			restartGame();
 		default:
 			break;
 		}
@@ -167,6 +150,41 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 		}
 	}
 
+	private void restartGame() {
+		gameRunning = false;
+		animationThread.interrupt();
+		try {
+			animationThread.join();
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		init(width, height);
+		animationThread.start();
+	}
+	
+	@Override
+	public void run() {
+		{
+			while (true) {
+				try {
+					Thread.sleep(sleepTime);
+				} catch (InterruptedException e1) {
+					return;
+				}
+				
+				if (gameRunning) {
+					try {
+						tick();
+					} catch (GameOverException e) {
+						gameRunning = false;
+					}
+				}
+				repaint();
+			}
+		}		
+	}
+	
 	private void drawFood(Graphics graphics) {
 		XY foodXY = food.getLocation();
 		if (foodXY != null) {
@@ -199,37 +217,6 @@ public class Game extends Component implements KeyListener, GameModel, Runnable 
 
 	private boolean inBounds(int x, int y) {
 		return x >= 0 && y >= 0 && x < width * scale && y < height * scale;
-	}
-
-	private boolean isGameRunning() {
-		return gameRunning;
-	}
-
-	private void setGameRunning(boolean b) {
-		gameRunning = b;
-	}
-
-	@Override
-	public void run() {
-		{
-			while (true) {
-				try {
-					Thread.sleep(sleepTime);
-				} catch (InterruptedException e1) {
-					return;
-				}
-				
-				if (isGameRunning()) {
-					try {
-						tick();
-					} catch (GameOverException e) {
-						setGameRunning(false);
-					}
-				}
-				repaint();
-			}
-		}
-		
 	}
 	
 	private void start() {
