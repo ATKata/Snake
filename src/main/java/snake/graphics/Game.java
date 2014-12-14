@@ -26,7 +26,7 @@ import snake.GameOverException;
 import snake.Snake;
 import snake.XY;
 
-public class Game extends Component implements KeyListener, GameModel {
+public class Game extends Component implements KeyListener, GameModel, Runnable {
 	private boolean gameRunning;
 	private DrawableSnake snake;
 	private DrawableFood food;
@@ -39,6 +39,7 @@ public class Game extends Component implements KeyListener, GameModel {
 	private int yOffset;
 	private long sleepTime;
 	private int score;
+	private Thread animationThread;
 
 	public Game(int width, int height) {
 		init(width, height);
@@ -68,23 +69,26 @@ public class Game extends Component implements KeyListener, GameModel {
 		at.scale(scale, scale);
 		scaleOp = new AffineTransformOp(at,
 				AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		animationThread = new Thread(this);
 	}
 
 	public void paint(Graphics g) {
 		currentFrame = new BufferedImage(width, height,
 				BufferedImage.TYPE_INT_RGB);
 
-		drawSnake();
-
-		drawFood();
-
 		BufferedImage pixelData = scaleOp.filter(currentFrame, null);
+
+		drawSnake(pixelData.getGraphics());
+
+		drawFood(pixelData.getGraphics());
 
 		if (!gameRunning) {
 			writeGameOver(pixelData);
 		}
 
 		g.drawImage(pixelData, 0, 0, null);
+		g.dispose();
+
 	}
 
 	@Override
@@ -109,8 +113,16 @@ public class Game extends Component implements KeyListener, GameModel {
 			snake.turn(Direction.DOWN);
 			break;
 		case 'r':
-			this.init(width, height);
-			break;
+			gameRunning = false;
+			animationThread.interrupt();
+			try {
+				animationThread.join();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			init(width, height);
+			animationThread.start();
 		default:
 			break;
 		}
@@ -152,27 +164,26 @@ public class Game extends Component implements KeyListener, GameModel {
 	public void tick() throws GameOverException {
 		if (snake.move()) {
 			score++;
-			if (sleepTime > 0) {
-				sleepTime--;
-			}
 		}
 	}
 
-	private void drawFood() {
+	private void drawFood(Graphics graphics) {
 		XY foodXY = food.getLocation();
 		if (foodXY != null) {
-			int pixelX = foodXY.x + xOffset;
-			int pixelY = -foodXY.y + yOffset;
-			currentFrame.setRGB(pixelX, pixelY, Color.RED.getRGB());
+			int pixelX = (foodXY.x + xOffset) * scale;
+			int pixelY = (-foodXY.y + yOffset) * scale;
+			graphics.setColor(Color.RED);
+			graphics.fillOval(pixelX, pixelY, scale, scale);
 		}
 	}
 
-	private void drawSnake() {
+	private void drawSnake(Graphics graphics) {
 		for (XY segment : snake.getSegments()) {
-			int pixelX = segment.x + xOffset;
-			int pixelY = -segment.y + yOffset;
+			int pixelX = (segment.x + xOffset) * scale;
+			int pixelY = (-segment.y + yOffset) * scale;
 			if (inBounds(pixelX, pixelY)) {
-				currentFrame.setRGB(pixelX, pixelY, Color.WHITE.getRGB());
+				graphics.setColor(Color.GREEN);
+				graphics.fillOval(pixelX, pixelY, scale, scale);
 			} else {
 				gameRunning = false;
 			}
@@ -184,11 +195,10 @@ public class Game extends Component implements KeyListener, GameModel {
 		graphics2d.setFont(new Font("Sans Serif", Font.BOLD, 30));
 		graphics2d.setColor(Color.WHITE);
 		graphics2d.drawString("Game Over - Score: " + score, 50, 50);
-		graphics2d.dispose();
 	}
 
 	private boolean inBounds(int x, int y) {
-		return x >= 0 && y >= 0 && x < width && y < height;
+		return x >= 0 && y >= 0 && x < width * scale && y < height * scale;
 	}
 
 	private boolean isGameRunning() {
@@ -199,9 +209,31 @@ public class Game extends Component implements KeyListener, GameModel {
 		gameRunning = b;
 	}
 
-	private long getSleepTime() {
-		return sleepTime;
-
+	@Override
+	public void run() {
+		{
+			while (true) {
+				try {
+					Thread.sleep(sleepTime);
+				} catch (InterruptedException e1) {
+					return;
+				}
+				
+				if (isGameRunning()) {
+					try {
+						tick();
+					} catch (GameOverException e) {
+						setGameRunning(false);
+					}
+				}
+				repaint();
+			}
+		}
+		
+	}
+	
+	private void start() {
+		animationThread.start();
 	}
 
 	public static void main(String[] args) throws InvocationTargetException,
@@ -223,26 +255,8 @@ public class Game extends Component implements KeyListener, GameModel {
 			f.setVisible(true);
 		});
 
-		Thread animationThread = new Thread(() -> {
-			while (true) {
-				try {
-					Thread.sleep(game.getSleepTime());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				if (game.isGameRunning()) {
-					try {
-						game.tick();
-					} catch (GameOverException e) {
-						game.setGameRunning(false);
-					}
-				}
-				f.repaint();
-			}
-		});
-
-		animationThread.start();
-
+		game.start();
 	}
+
 
 }

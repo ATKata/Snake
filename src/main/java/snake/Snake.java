@@ -1,14 +1,14 @@
 package snake;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class Snake implements DrawableSnake {
 	private Direction direction;
 	private Deque<XY> segments;
 	private GameModel gameModel;
-
 
 	public Snake() {
 		this(new XY(0, 0), Direction.UP, Arrays.asList(new XY(0, 0)));
@@ -17,7 +17,7 @@ public class Snake implements DrawableSnake {
 	public Snake(XY headLocation, Direction direction, Iterable<XY> segments) {
 		super();
 		this.direction = direction;
-		this.segments = new ArrayDeque<XY>();
+		this.segments = new ConcurrentLinkedDeque<XY>();
 		for (XY xy : segments) {
 			this.segments.addLast(xy);
 		}
@@ -62,8 +62,7 @@ public class Snake implements DrawableSnake {
 
 	@Override
 	public Iterable<XY> getSegments() {
-		return segments;
-
+		return Collections.unmodifiableCollection(segments);
 	}
 
 	@Override
